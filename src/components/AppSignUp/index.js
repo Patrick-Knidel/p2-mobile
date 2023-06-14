@@ -6,11 +6,11 @@ import * as yup from 'yup';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState, useEffect } from "react";
 import api from "../service";
-import axios from "axios";
 
 const schema = yup.object({
     name: yup.string().required("Enter your full name"),
     username: yup.string().required("Create a username"),
+    email: yup.string().email().required("Enter your email"),
     password: yup.string().required("Create a password"),
     copassword: yup.string().required("Confirm your password"),
     phone: yup.string().required("Enter your phone number"),
@@ -27,6 +27,8 @@ export default function AppSignUp({navigation}){
     const [senhaUsuario, setSenhaUsuario] = useState('');
     const [confirmarSenhaUsuario, setConfirmarSenhaUsuario] = useState('');
     const [telefoneUsuario, setTelefoneUsuario] = useState('');
+    const [usuario, setUsuario] = useState('');
+    const [hashUsuario, setHashUsuario] = useState('');
 
     function nomeUsuarioChanged(nomeUsuario){
         setNomeUsuario(nomeUsuario)
@@ -48,6 +50,14 @@ export default function AppSignUp({navigation}){
         setTelefoneUsuario(telefoneUsuario)
     }
 
+    function usuarioChanged(usuario){
+        setUsuario(usuario)
+    }
+
+    function hashUsuarioChanged(hashUsuario){
+        setHashUsuario(hashUsuario)
+    }
+
     useEffect(async () => {
         if(Platform.OS !== 'web'){
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -63,6 +73,8 @@ export default function AppSignUp({navigation}){
           base64: true,
           allowsEditing: true,
           aspect: [4,3],
+          width: 300,
+          height: 300,
           quality: 1,
       });
     
@@ -74,8 +86,8 @@ export default function AppSignUp({navigation}){
       };  
 
       
-      function postUser() {
-        api.post('http://192.168.0.184:8080/user/',{
+      async function postUser() {
+        const response = await api.post('http://192.168.0.184:8080/user/',{
             nome: nomeUsuario,
             avatar: fotoUsuario,
             senha: senhaUsuario,
@@ -83,15 +95,39 @@ export default function AppSignUp({navigation}){
             telefone: telefoneUsuario
         })
         .then(function(response){
-            console.log(response);
+            console.log("Criado com sucesso");
+        })
+        .catch(function(error){
+            console.log("Erro ao criar");
+        })
+      };
+
+      async function getUser(){
+        try{
+            const response = await api.get(`http://192.168.0.184:8080/user/${telefoneUsuario}/${senhaUsuario}`)
+            const usuario =  (response.data);
+            setUsuario(usuario);
+            console.log(usuario.id)
+        }catch(error){
+            console.log(error);
+        }   
+            
+        }
+
+      function getHashUsuario(){        
+        api.get(`http://192.168.0.184:8080/user/${usuario.id}`)
+        .then(function(response){
+            hashUsuarioChanged(response.data);
+            console.log(response.data);
         })
         .catch(function(error){
             console.log(error);
         })
-        navigation.replace("AppLogin");
-      };
+      }
 
       async function btnSalvar(){
+        postUser();
+
         const item = {nomeUsuario, fotoUsuario, emailUsuario, senhaUsuario, telefoneUsuario};
         let items = [];
         const response = await AsyncStorage.getItem('items');
@@ -102,6 +138,7 @@ export default function AppSignUp({navigation}){
         console.log(items);
     
         await AsyncStorage.setItem('items', JSON.stringify(items));
+
         navigation.replace("AppLogin");
       }
       
@@ -267,7 +304,7 @@ export default function AppSignUp({navigation}){
             
             <TouchableOpacity
              style={styles.botaoCreate}
-             onPress={postUser}
+             onPress={btnSalvar}
             >
                 <Text style={styles.botaoCreateTexto}>Create</Text>
             </TouchableOpacity>
@@ -320,7 +357,7 @@ const styles = StyleSheet.create({
     height: 44,
     backgroundColor: '#F6313E',
     borderRadius: 15,
-    marginTop: 425,
+    marginTop: 430,
   },
   botaoCreateTexto: {
     textAlign: 'center',

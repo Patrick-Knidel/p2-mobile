@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 
 
 export default function AppMainScreen(){
-    const [items, setItems] = useState([]);
+    const [items, setItems] = useState('');
     
     function itemsChanged(items){
         setItems(items)
@@ -39,7 +39,7 @@ export default function AppMainScreen(){
                                  
                                 style={styles.textoContatos}                   
                             >
-                            {<Image source={{ uri: item.fotoUsuario }} />}
+                            {<Image source={{ uri: `data:image/jpeg;base64,${item.fotoUsuario}` }} />}
                             {item.nomeUsuario}         {item.telefoneUsuario}
                             </Text>
                         </View>
