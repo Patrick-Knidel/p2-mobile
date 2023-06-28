@@ -21,14 +21,13 @@ export default function AppSignUp({navigation}){
     const { control, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(schema)
     })
-    const [fotoUsuario, setFoto] = useState(null);
+    const [fotoUsuario, setFoto] = useState('');
     const [nomeUsuario, setNomeUsuario] = useState('');
     const [emailUsuario, setEmailUsuario] = useState('');
     const [senhaUsuario, setSenhaUsuario] = useState('');
     const [confirmarSenhaUsuario, setConfirmarSenhaUsuario] = useState('');
     const [telefoneUsuario, setTelefoneUsuario] = useState('');
     const [usuario, setUsuario] = useState('');
-    const [hashUsuario, setHashUsuario] = useState('');
 
     function nomeUsuarioChanged(nomeUsuario){
         setNomeUsuario(nomeUsuario)
@@ -54,10 +53,6 @@ export default function AppSignUp({navigation}){
         setUsuario(usuario)
     }
 
-    function hashUsuarioChanged(hashUsuario){
-        setHashUsuario(hashUsuario)
-    }
-
     useEffect(async () => {
         if(Platform.OS !== 'web'){
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -73,15 +68,13 @@ export default function AppSignUp({navigation}){
           base64: true,
           allowsEditing: true,
           aspect: [4,3],
-          width: 300,
-          height: 300,
-          quality: 1,
+          quality: 0.5,
       });
     
         console.log(result);
     
         if(!result.canceled){
-          setFoto(result.assets[0].uri);
+          setFoto(result.base64);
         }
       };  
 
@@ -102,29 +95,6 @@ export default function AppSignUp({navigation}){
         })
       };
 
-      async function getUser(){
-        try{
-            const response = await api.get(`http://192.168.0.184:8080/user/${telefoneUsuario}/${senhaUsuario}`)
-            const usuario =  (response.data);
-            setUsuario(usuario);
-            console.log(usuario.id)
-        }catch(error){
-            console.log(error);
-        }   
-            
-        }
-
-      function getHashUsuario(){        
-        api.get(`http://192.168.0.184:8080/user/${usuario.id}`)
-        .then(function(response){
-            hashUsuarioChanged(response.data);
-            console.log(response.data);
-        })
-        .catch(function(error){
-            console.log(error);
-        })
-      }
-
       async function btnSalvar(){
         postUser();
 
@@ -141,12 +111,12 @@ export default function AppSignUp({navigation}){
 
         navigation.replace("AppLogin");
       }
-      
 
     return (
         <View style={styles.container}>
 
             <View style={styles.titulo}>
+                {}
                 <Text style={styles.tituloTexto}>Sign up</Text>
             </View>
 
@@ -154,7 +124,7 @@ export default function AppSignUp({navigation}){
                 style={styles.imagemPosicao}
                 onPress={pickImage}  
             >
-                {fotoUsuario && <Image source={{ uri: fotoUsuario }} style={{ width: 150, height: 142, borderRadius: 70 }} />}
+                {fotoUsuario && <Image source={{ uri: `data:image/jpeg;base64,${fotoUsuario}` }} style={{ width: 150, height: 142, borderRadius: 70 }} />}
 
                 <Image 
                     style={styles.imagemBtn} 

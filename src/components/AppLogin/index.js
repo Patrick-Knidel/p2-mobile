@@ -21,10 +21,13 @@ export default function AppLogin({navigation}) {
   const [usuario, setUsuario] = useState('');
   const [userTelefone, setUserTelefone] = useState('');
   const [userSenha, setUserSenha] = useState('');
+  const [userId, setUserId] = useState('');
   const [loading, setLoading] = useState(true);
   const [userDataLoaded, setUserDataLoaded] = useState(false);
+  
 
   useEffect(() => {
+    //clearAsyncStorage()
     getData().then(() => {
       getUser().then(() => {
         setUserDataLoaded(true);
@@ -87,6 +90,7 @@ export default function AppLogin({navigation}) {
       const response = await api.get(`http://192.168.0.184:8080/user/${userTelefone}/${userSenha}`)
       const usuario =  (response.data);
       setUsuario(usuario);
+      setUserId(usuario.id);
       console.log(usuario.id)
     }catch(error){
         console.log(error);
@@ -98,6 +102,7 @@ export default function AppLogin({navigation}) {
       const response = await api.get(`http://192.168.0.184:8080/user/${telefone}/${senha}`)
       const usuario =  (response.data);
       setUsuario(usuario);
+      setUserId(usuario.id);
       console.log(usuario.id)
     }catch(error){
         console.log(error);
@@ -112,7 +117,9 @@ export default function AppLogin({navigation}) {
       console.log(usuario.id);
   
       if (userTelefone === usuario.telefone && userSenha === usuario.senha) {
-        navigation.navigate("AppMainScreen");
+        console.log(userTelefone);
+        console.log(userId);
+        navigation.navigate("AppMainScreen", {telefoneChat: userTelefone, meuId: usuario.id});
       } else {
         console.log("Authentication failed");
       }
@@ -126,7 +133,7 @@ export default function AppLogin({navigation}) {
       await getUserApi()       
       if(telefone === usuario.telefone && senha === usuario.senha){
         console.log("Success Sign In")
-        navigation.navigate("AppMainScreen")
+        navigation.navigate("AppMainScreen", {telefoneChat: userTelefone, meuId: userId})
       }else{
         Alert.alert("Invalid Login", "User phone or password is incorrect",[
           {
